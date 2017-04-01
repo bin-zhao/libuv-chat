@@ -1,0 +1,3 @@
+/Users/vega-001/Develop/GitHub/libuv-chat/Build_Server/CMakeFiles/rebuild_cache.dir
+/Users/vega-001/Develop/GitHub/libuv-chat/Build_Server/CMakeFiles/edit_cache.dir
+/Users/vega-001/Develop/GitHub/libuv-chat/Build_Server/CMakeFiles/Server.dir

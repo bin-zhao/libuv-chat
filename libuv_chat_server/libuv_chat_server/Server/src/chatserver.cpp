@@ -6,7 +6,7 @@
 #include <algorithm>
 
 static const int DEFAULT_BACKLOG = 100;
-static const int DISCONNECTION_TIME = 10000;
+static const int DISCONNECTION_TIME = 3600 * 1000;
 
 void Log(std::string str)
 {
@@ -38,6 +38,9 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
         {
             const char* charbuffer = buf->base;
             int n = nread;
+
+            std::string message(charbuffer);
+            std::cout << "message: " << charbuffer << ", " << message.size() << std::endl;
 
             while (n > 0)
             {
@@ -170,7 +173,7 @@ void ChatServer::OnConnectionClose(uv_handle_t* handle)
 
 void ChatServer::Broadcast(const std::string& msg)
 {
-    Log("Broadcasting message: " + msg + std::to_string(msg.size()));    
+    Log("Broadcasting message: " + msg + ";len " + std::to_string(msg.size()));
     if (name_list.size() > 0)
     {
         std::shared_ptr<Msg> msgStruct = std::make_shared<Msg>(msg);
@@ -302,7 +305,8 @@ int ChatServer::Init(int port)
     uv_tcp_init(&loop, &server);
 
     sockaddr_in addr;
-    uv_ip4_addr("0.0.0.0", port, &addr);
+    uv_ip4_addr("192.168.1.116", port, &addr);
+//    uv_ip4_addr("tcp://server.ngrok.cc", 62335, &addr);
 
     uv_tcp_bind(&server, (const struct sockaddr*)&addr, 0);
 

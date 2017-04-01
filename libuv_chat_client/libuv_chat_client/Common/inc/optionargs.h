@@ -1,4 +1,4 @@
-#include <optionparser.h>
+#include "optionparser.h"
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,6 +18,8 @@ struct Arg : public option::Arg
         {
             printError("Unknown option '", option, "'\n");
         }
+
+        return option::ArgStatus::ARG_NONE;
     }
 
 

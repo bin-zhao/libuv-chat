@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <uv.h>
+#include "uv.h"
 #include <csignal>
 
 #include "optionargs.h"
@@ -58,9 +58,7 @@ int main(int argc, char* argv[])
     signal(SIGINT, term);
 
     ChatServer* server = ChatServer::GetInstance();
-    char* endptr = 0;
-    strtol(options[PORT].arg, &endptr, 10);
-    int err = server->Init(*endptr);
+    int err = server->Init(strtol(options[PORT].arg, NULL, 10));
 
     if (err != 0)
     {
