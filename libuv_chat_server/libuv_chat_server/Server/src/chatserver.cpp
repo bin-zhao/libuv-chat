@@ -305,8 +305,9 @@ int ChatServer::Init(int port)
     uv_tcp_init(&loop, &server);
 
     sockaddr_in addr;
-    uv_ip4_addr("192.168.1.116", port, &addr);
+//    uv_ip4_addr("192.168.1.116", port, &addr);
 //    uv_ip4_addr("tcp://server.ngrok.cc", 62335, &addr);
+    uv_ip4_addr("192.168.1.101", 2334, &addr);
 
     uv_tcp_bind(&server, (const struct sockaddr*)&addr, 0);
 

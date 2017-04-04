@@ -66,6 +66,9 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Some parameters are missing!\n");
         return 1;
     }
+    
+    // Mike: 192.168.1.45:8007
+    // INet: 47.90.121.178:62335
 
     try
     {

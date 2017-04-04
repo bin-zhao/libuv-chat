@@ -176,11 +176,9 @@ void ChatSession::Connect()
 void ChatSession::Init(int port, const std::string& addr, const std::string& name)
 {
     uv_tcp_init(&mainloop, &socket);
-//    uv_ip4_addr(addr.c_str(), port, &dest);
-    uv_ip4_addr("192.168.1.45", 8007, &dest);
+    uv_ip4_addr(addr.c_str(), port, &dest);
     this->name = name;
-//    display_line("Init session as " + name + " at " + addr + ":" + std::to_string(port));
-    display_line("Init session as " + name + " at " + "192.168.1.45" + ":" + std::to_string(8007));
+    display_line("Init session as " + name + " at " + addr + ":" + std::to_string(port));
     Connect();
 
     if (main_loop_running == false)
