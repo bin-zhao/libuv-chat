@@ -74,6 +74,7 @@ public:
 
     void OnClientTimeout(uv_timer_t* handle);
     msg_buffer* GetReadBuffer();
+    
 protected:
     ChatServer();
     ~ChatServer();
@@ -90,6 +91,10 @@ protected:
     msg_buffer read_buffer;
 
     MsgPool msg_queue;
+    
+    uv_loop_t _write_loop;
+    uv_timer_t _write_timer;
+    uv_mutex_t _write_mutex;
 };
 
 

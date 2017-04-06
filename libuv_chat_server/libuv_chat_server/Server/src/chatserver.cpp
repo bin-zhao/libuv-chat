@@ -72,12 +72,13 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
                         {
                             s->Activate();
                             name_list.push_back(s->GetName());
-                            Broadcast(s->GetName() + " has joined!"); 
+//                            Broadcast(s->GetName() + " has joined!"); 
                         }
                     }
                     else
                     {
-                        Broadcast(s->GetName() + ":" + s->GetMsg());
+                        Broadcast(s->GetMsg());
+//                        Broadcast(s->GetName() + ":" + s->GetMsg());
                         s->FinishMessage();
                     }
                     charbuffer = zero + 1;
@@ -307,7 +308,8 @@ int ChatServer::Init(int port)
     sockaddr_in addr;
 //    uv_ip4_addr("192.168.1.116", port, &addr);
 //    uv_ip4_addr("tcp://server.ngrok.cc", 62335, &addr);
-    uv_ip4_addr("192.168.1.101", 2334, &addr);
+//    uv_ip4_addr("192.168.1.101", 2334, &addr);
+    uv_ip4_addr("127.0.0.1", 62335, &addr);
 
     uv_tcp_bind(&server, (const struct sockaddr*)&addr, 0);
 
@@ -320,7 +322,8 @@ int ChatServer::Init(int port)
 
     if (err == 0)
     {
-        std::cout << "Listening for connections on port " << port << std::endl;
+        std::cout << "server ready." << std::endl;
+//        std::cout << "Listening for connections on port " << port << std::endl;
         uv_run(&loop, UV_RUN_DEFAULT);
         running = true;
     }
