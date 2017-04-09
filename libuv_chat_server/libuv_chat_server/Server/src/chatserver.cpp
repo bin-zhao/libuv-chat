@@ -4,9 +4,11 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include "spdlog/spdlog.h"
 
 static const int DEFAULT_BACKLOG = 100;
 static const int DISCONNECTION_TIME = 3600 * 1000;
+static auto g_log = spdlog::stderr_color_mt("server");
 
 void Log(std::string str)
 {
@@ -18,12 +20,12 @@ void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf)
     
     ChatServer* server = ChatServer::GetInstance();
     msg_buffer* readVector = server->GetReadBuffer();
-    *buf = uv_buf_init(readVector->data(), readVector->capacity());  
+    *buf = uv_buf_init(readVector->data(), static_cast<unsigned int>(readVector->capacity()));
 }
 
 void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf)
 {
-    Log("Msg received!");
+//    Log("Msg received!");
     auto connection_pos = open_sessions.find(stream);
     if (connection_pos != open_sessions.end())
     {
@@ -37,13 +39,15 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
         else if (nread > 0)
         {
             const char* charbuffer = buf->base;
-            int n = nread;
+            ssize_t n = nread;
 
             std::string message(charbuffer);
-            std::cout << "message: " << charbuffer << ", " << message.size() << std::endl;
+//            std::cout << "message: " << charbuffer << ", " << message.size() << std::endl;
+            g_log->info("RECV {0:d}:{1:s}:{2:s}", nread, buf->base, std::string(buf->base, nread).c_str());
 
             while (n > 0)
             {
+                // 对粘包的简单处理。
                 const char* zero = (char*)memchr(charbuffer, 0, n);
                 if (zero == nullptr)
                 {
@@ -53,8 +57,9 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
                 else
                 {
                     ChatSession* s = &connection_pos->second;
-                    int bufflen = zero - charbuffer;
+                    size_t bufflen = zero - charbuffer;
                     s->AddToMsg(charbuffer, bufflen);
+#if 0
                     if (s->GetReadState() == ChatSession::ReadState::NameRead)
                     {
                         s->FinishMessage();
@@ -71,8 +76,8 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
                         else
                         {
                             s->Activate();
-                            name_list.push_back(s->GetName());
-//                            Broadcast(s->GetName() + " has joined!"); 
+//                            name_list.push_back(s->GetName());
+//                            Broadcast(s->GetName() + " has joined!");
                         }
                     }
                     else
@@ -81,6 +86,16 @@ void ChatServer::OnMsgRecv(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
 //                        Broadcast(s->GetName() + ":" + s->GetMsg());
                         s->FinishMessage();
                     }
+#else
+                    if (s->GetReadState() == ChatSession::ReadState::NameRead) {
+                        s->FinishMessage();
+                        s->Activate();
+                        name_list.push_back("first_client");
+                    }
+                    // broadcast to all clients.
+                    Broadcast(s->GetMsg());
+                    s->FinishMessage();
+#endif
                     charbuffer = zero + 1;
                     n -= bufflen + 1;
                 }
@@ -174,7 +189,7 @@ void ChatServer::OnConnectionClose(uv_handle_t* handle)
 
 void ChatServer::Broadcast(const std::string& msg)
 {
-    Log("Broadcasting message: " + msg + ";len " + std::to_string(msg.size()));
+//    Log("Broadcasting message: " + msg + ";len " + std::to_string(msg.size()));
     if (name_list.size() > 0)
     {
         std::shared_ptr<Msg> msgStruct = std::make_shared<Msg>(msg);
@@ -204,6 +219,7 @@ void ChatServer::SendSingleMsg(uv_stream_t* target, std::string message)
 
 void ChatServer::SendData(uv_stream_t* connection, Msg* message)
 {
+    g_log->info("SEND {0:d}:{1:s}:{2:s}", message->GetBuf()->base, message->GetBuf()->len, std::string(message->GetBuf()->base, message->GetBuf()->len));
     uv_write_t* req = msg_queue.requests.GetNew();
     uv_write(req,
              connection,
@@ -374,8 +390,9 @@ void ChatSession::FinishMessage()
         name = std::string(next_msg.begin(), next_msg.end());
         std::transform(name.begin(), name.end(), name.begin(), ::tolower);
         state = ReadState::MessageRead;
+    } else {
+        next_msg.clear();
     }
-    next_msg.clear();
 }
 
 void ChatServer::OnMsgSent(uv_write_t* req, int status)

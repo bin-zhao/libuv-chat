@@ -3,7 +3,7 @@
 Msg::Msg(const std::string& str)
 : buffer(str.begin(), str.end())
 {
-    buffer.push_back(0);
+//    buffer.push_back(0);
     cached_buf.base = buffer.data();
     cached_buf.len = buffer.size();
 }
